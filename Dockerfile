@@ -37,6 +37,6 @@ RUN apt-get update \
         libtidy5deb1 \
     && apt-get clean
 COPY --from=builder /app/build/lgogdownloader /usr/bin/lgogdownloader
-COPY ldownloader.sh /root/
+COPY lgogdownloader.sh /root/
 WORKDIR /data
 #ENTRYPOINT ["/usr/bin/lgogdownloader"]

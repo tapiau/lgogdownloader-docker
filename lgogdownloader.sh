@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER_IMAGE="tapiau/lgogdownloader:test-v3.15"
+DOCKER_IMAGE="tapiau/lgogdownloader:test-v3.16"
 
 DATADIR=""
 
