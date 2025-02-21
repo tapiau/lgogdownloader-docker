@@ -11,6 +11,7 @@ DOCKER_TAG=$(git ls-remote --tags ${REPO} \
            	)
 DATADIR="$(pwd)"
 DEBUG=false
+BUILD_ONLY=false
 
 # Parse command line arguments
 for arg in "$@"; do
@@ -23,10 +24,20 @@ for arg in "$@"; do
       DOCKER_TAG="${arg#*=}"
       shift
       ;;
+    --build-only)
+      BUILD_ONLY=true
+      shift
+      ;;
+    --debug)
+      DEBUG=true
+      shift
+      ;;
     --help)
-      echo "Usage: $0 [--datadir=] [--docker-tag=] [--help]"
+      echo "Usage: $0 [--datadir=] [--docker-tag=] [--build-only] [--debug] [--help]"
       echo "  --datadir=DIR   Directory to store downloaded files (default: current directory)"
       echo "  --docker-tag=TAG Docker image tag (default: latest taken from ${REPO})"
+      echo "  --build-only    Only build the Docker image without running the container"
+      echo "  --debug         Enable debug output"
       exit 0
       ;;
   esac
@@ -37,6 +48,12 @@ if [[ "$(docker images -q ${DOCKER_IMAGE}:${DOCKER_TAG} 2> /dev/null)" == "" ]];
     DOCKERFILE=$(sed -n '/^##Dockerfile##/,$p' $0 | tail -n +2)
     echo "${DOCKERFILE}" | docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f - .
   fi
+fi
+
+# Exit if --build-only was specified
+if [ "${BUILD_ONLY}" = true ]; then
+  echo "Docker image ${DOCKER_IMAGE}:${DOCKER_TAG} built successfully"
+  exit 0
 fi
 
 DOCKER_OPTIONS=()
@@ -57,10 +74,12 @@ DEFAULT_OPTIONS="--no-color --verbosity=-1 --threads=16 --info-threads=32"
 # --threads=16 --info-threads=32 --download --game the_witcher_3_wild_hunt_game_of_the_year_edition_game
 
 if [ "${DEBUG}" = true ]; then
-  echo "${DOCKER} lgogdownloader ${DEFAULT_OPTIONS} $*"
+  echo "Docker command: ${DOCKER} lgogdownloader ${DEFAULT_OPTIONS} $*"
+  echo "Data directory: ${DATADIR}"
+  echo "Docker image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+  echo "Docker options: ${DOCKER_OPTIONS[@]}"
 fi
 
-#echo ${DOCKER} lgogdownloader ${DEFAULT_OPTIONS} $*
 ${DOCKER} lgogdownloader ${DEFAULT_OPTIONS} $*
 
 exit 0
